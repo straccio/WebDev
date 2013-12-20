@@ -66,8 +66,6 @@ if [ -e "${HOME}/.webdev" ] ; then
 		fi
 	fi
 else
-	echo "Install"
-	mkdir -p "${WEBDEV}/.webdev/bin"
-	mkdir -p "${WEBDEV}/.webdev/share/bash-include/install"
-	cp ${0} "${WEBDEV}/.webdev/bin/"
+	echo "Install base environ"
+	git clone https://github.com/straccio/WebDev.git ~/.webdev
 fi
