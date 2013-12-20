@@ -1,0 +1,41 @@
+server {
+	listen ${_port};
+ 
+	server_name ${_server_name};
+	root ${_root}/web;
+ 
+	error_log ${WEBDEV_LOG_PATH}/${_name}_error.log;
+	access_log ${WEBDEV_LOG_PATH}/${_name}_access.log;
+ 
+	rewrite ^/app_dev\.php/?(.*)$ /\$1 permanent;
+	#rewrite ^/$ /statistics/index.html permanent;
+
+	try_files \$uri @rewriteapp;
+	location @rewriteapp {
+		rewrite ^(.*)$ /app_dev.php/\$1 last;
+	}
+
+	# Deny all . files
+	location ~ /\.[^(sencha)] {
+		deny all;
+	}
+ 
+	location ~ ^/app_dev\.php(/|$) {
+		fastcgi_split_path_info ^(.+\.php)(/.*)$;
+		include fastcgi_params;
+		fastcgi_index app_dev.php;
+		fastcgi_pass unix:${phpfpm_listen};
+	}
+ 
+	# Statics
+	location /(bundles|media) {
+		access_log off;
+		#expires 30d;
+ 
+		# Font files
+		#if ($filename ~* ^.*?\.(eot)|(ttf)|(woff)$){
+		#       add_header Access-Control-Allow-Origin *;
+		#}
+		try_files \$uri @rewriteapp;
+	}
+}

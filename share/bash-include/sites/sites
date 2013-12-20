@@ -1,0 +1,182 @@
+#!/bin/bash
+
+sites=`getConfig "sites" | grep "= Dict {"| perl -pe 's/\s*(.*) = Dict.*/\1/'`
+sitesEnabled=`ls -1 ${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-* |perl -pe 's/.*site-(.*)\.conf/\1/'`
+sitesToggled=`echo ${sites} | perl -pe "s/ ?(\`echo ${sitesEnabled} | tr ' ' '|'\`)//g" | perl -pe 's/^ //' | perl -pe 's/ $//'`
+siteConfigs='port root server_name type name'
+
+function sites_case {
+	case ${1} in
+		list)
+			for site in ${sites}
+			do
+				host=`getConfig "sites:${site}:server_name"`
+				port=`getConfig "sites:${site}:port"`
+				if [ -a "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-${site}.conf" ] ; then
+					printOK "${site}		http://${host}:${port}" "ENABLED"
+				else
+					printERR "${site}		http://${host}:${port}" "DISABLED"
+				fi
+			done
+			#${plistCmd} "print sites" ${WEBDEV_PATH}/webdev-config.plist | grep "= Dict {"| perl -pe 's/\s*(.*) = Dict.*/\1/'
+		;;
+		enable|ena)
+			if [ -a "${WEBDEV_NGINX_CONF_PATH}/sites-available/site-${2}.conf" ] ; then
+				if [ -a "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-${2}.conf" ] ; then
+					printWARN "Site ${2}" "ALREADY_ENABLED"
+				else
+					ln -s "${WEBDEV_NGINX_CONF_PATH}/sites-available/site-${2}.conf" "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-${2}.conf"
+					printOK "Site ${2}" "ENABLED"
+					${WEBDEV_PATH}/bin/webdev bashcompletion generate
+				fi
+			else
+				sites_case config ${2} > /dev/null 2>&1
+				if [ -a "${WEBDEV_NGINX_CONF_PATH}/sites-available/site-${2}.conf" ] ; then
+					ln -s "${WEBDEV_NGINX_CONF_PATH}/sites-available/site-${2}.conf" "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-${2}.conf"
+					printOK "Site ${2}" "ENABLED"
+					${WEBDEV_PATH}/bin/webdev bashcompletion generate
+				else
+					printERR "Site ${2}" "NOT_FOUND"
+				fi
+			fi
+		;;
+		disable|dis)
+			if [ -a "${WEBDEV_NGINX_CONF_PATH}/sites-available/site-${2}.conf" ] ; then
+				if [ -a "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-${2}.conf" ] ; then
+					rm "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-${2}.conf"
+					printOK "Site ${2}" "DISABLED"
+				else
+					printWARN "Site ${2}" "ALREADY_DISABLED"
+				fi
+			else
+				printERR "Site ${2}" "NOT_FOUND"
+			fi
+		;;
+		enabled)
+			ls -1 "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/" | perl -pe 's/site-(.*)\.conf/\1/'
+		;;
+		config)
+			siteType=`getConfig "sites:${2}:type"`
+
+			case ${siteType} in
+				symfony2-dev)
+					templateFromPlist "sites:${2}: service-configs:phpfpm" "${WEBDEV_PATH}/share/templates/nginx/sites/${siteType}.conf.template" "${WEBDEV_NGINX_CONF_PATH}/sites-available/site-${2}.conf"
+				;;
+				*|normal)
+				
+				;;
+			esac
+		;;
+		help|?|h)
+			showHelp
+		;;
+		*)
+			if [[ ${sites} =~ ${1} ]] ; then
+				commandPath=${commandPath}_site
+				${commandPath}_case ${@}
+			else
+				showHelp
+			fi
+		;;
+	esac
+}
+_bashcompletion_paths="${_bashcompletion_paths} sites sites_config sites_enable sites_disable `echo ${sites} | perl -pe 's/([^\s]+)/sites_\1/g'`"
+function sites_opts {
+	echo "webdev_sites_opts=\"list enabled enable disable config ${sites}\""
+}
+
+function sites_config_opts {
+	echo "webdev_sites_config_opts=\"${sites}\""
+}
+
+function sites_enable_opts {
+	echo "webdev_sites_enable_opts=\"${sitesToggled}\""
+}
+
+function sites_disable_opts {
+	echo "webdev_sites_disable_opts=\"${sitesEnabled}\""
+}
+
+for site in ${sites}
+do
+	eval "
+_bashcompletion_paths=\"${_bashcompletion_paths} sites_${site}_get sites_${site}_set\"
+function sites_${site}_opts {
+	echo \"webdev_sites_${site}_opts=\\\"get set enable disable config\\\"\"
+}
+function sites_${site}_get_opts {
+	echo \"webdev_sites_${site}_get_opts=\\\"${siteConfigs}\\\"\"
+}
+function sites_${site}_set_opts {
+	echo \"webdev_sites_${site}_set_opts=\\\"${siteConfigs}\\\"\"
+}
+	"
+done
+
+
+function sites_help {
+	print_help \
+				"webdev sites list	list all websites" \
+				"webdev sites enabled	list enabled the sites" \
+				"webdev sites enable <site>	enable the site" \
+				"webdev sites disable <site>	enable the site" \
+				"webdev config <site>	generate config file for site" \
+				"webdev sites <site> get	get all settings for selected site" \
+				"webdev sites <site> get [setting]	get setting for selected site" \
+				"webdev sites <site> set [setting]	get setting for selected site" \
+				"webdev sites <site> enable	enable selected site" \
+				"webdev sites <site> disable	disable selected site" \
+				"webdev sites <site> help	show help for selected site"
+				"webdev sites help	show this help"
+}
+function sites_site_help {
+	print_help \
+		"webdev sites ${1} get	get all settings for ${1} site" \
+		"webdev sites ${1} get [setting]	get setting for ${1} site" \
+		"webdev sites ${1} set [setting]	get setting for ${1} site" \
+		"webdev sites ${1} enable	enable ${1} site" \
+		"webdev sites ${1} disable	disable ${1} site" \
+		"webdev sites ${1} help	show this help" 
+}
+
+function sites_site_case {
+	case ${2} in
+		get)
+			if [ "x${3}" == x ] ; then
+				getConfig "sites:${1}" | grep -v "^Dict {" | grep -v "^}" | perl -pe "s/^\s*//"
+			else
+				if [[ $siteConfigs =~ ${3} ]] ; then
+					echo -ne "${3} = "
+					getConfig "sites:${1}:${3}"
+				else
+					echo "Config for site ${1} not found "
+					sites_site_help ${1}
+				fi
+			fi
+		;;
+		set)
+			if [ "x${3}" != x ] ; then
+				if [[ $siteConfigs =~ ${3} ]] ; then
+					if [ "x${4}" == "x" ] ; then
+						echo "Missing argument"
+						sites_site_help ${1}
+					else
+						setConfig "sites:${1}:${3}" "${4}"
+					fi
+				else
+					echo "Config for site ${1} not found "
+					sites_site_help ${1}
+				fi
+			else
+				echo "Missing argument"
+				sites_site_help ${1}
+			fi
+		;;
+		config|enable|disable)
+			sites_case "${2}" "${1}"
+		;;
+		*|help|?|h)
+			sites_site_help ${1}
+		;;
+	esac
+}

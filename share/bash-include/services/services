@@ -1,0 +1,213 @@
+#!/bin/bash
+launchctl=/bin/launchctl
+services=`ls -1 ${WEBDEV_PATH}/share/bash-include/services | grep -v "services" | tr "\\n" " "| perl -pe 's/ $//'` 
+servicesToggled=`getConfig "services" | grep -v "^Dict {" | grep -v "^}" | grep -iE "false|no" | perl -pe 's/^\s*//'| perl -pe 's/ = .*//'| tr "\\n" " "`
+servicesEnabled=`getConfig "services" | grep -v "^Dict {" | grep -v "^}" | grep -iE "true|yes" | perl -pe 's/^\s*//'| perl -pe 's/ = .*//' | tr "\\n" " "`
+
+function services_case {
+	case ${1} in
+		start|stop|check|restart)
+			for service in ${services}
+			do
+				if [ "`getConfig "services:${service}"`" == "true" ] ; then
+					serviceManager ${service} ${1}
+				fi
+			done
+		;;
+		enable|ena)
+			if [[ ${servicesToggled} =~ ${2} ]] ; then
+				setConfig "services:${2}" "true" 
+				${WEBDEV_PATH}/bin/webdev bashcompletion generate
+				printOK "Service ${2}" "ENABLED"
+			else
+				printKO "Service ${2}" "ALREADY_ENABLED"
+			fi
+		;;
+		disable|ena)
+			if [[ ${servicesEnabled} =~ ${2} ]] ; then
+				setConfig "services:${2}" "false" 
+				${WEBDEV_PATH}/bin/webdev bashcompletion generate
+				printOK "Service ${2}" "DISABLED"
+			else
+				printKO "Service ${2}" "ALREADY_DISABLED"
+			fi
+		;;
+		list)
+			for service in ${services}
+			do
+				if [ "`getConfig "services:${service}"`" != "true" ] ; then
+					printKO "Service ${service}" "DISABLED"
+				else
+					printOK "Service ${service}" "ENABLED"
+				fi
+			done
+		;;
+		help|?|h)
+			showHelp
+		;;
+		*)
+			if [[ ${services} =~ ${1} ]] ; then
+				commandPath=${commandPath}_${1}
+				${commandPath}_case "${@:2}"
+			else
+				echo -e "Wrong argument\n"
+				showHelp
+			fi
+		;;
+	esac
+}
+
+function serviceHelper {
+	if [ -a "${WEBDEV_PATH}/share/templates/LaunchAgents/webdev.${1}.plist.template" ]; then
+		sudo=""
+		if [ "x${3}" != "x" ]; then
+			sudo="sudo -n "
+			if [ -a "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist" ] ; then
+				sudo chown ${LOGNAME}:staff "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+			fi
+			generateLaunchAgentPlist "${1}"
+			sudo chown root:admin "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+			sudo chmod 644 "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+		else
+			generateLaunchAgentPlist "${1}"
+		fi
+		case ${2} in
+			start)
+#				echo "Starting service ${1}"
+				$sudo ${launchctl} load -w ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist > /dev/null 2>&1
+				return $?
+			;;
+			stop)
+#				echo "Stopping service ${1}"
+				$sudo ${launchctl} unload -w ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist > /dev/null 2>&1
+				return $?
+			;;
+			check)
+#				echo -n "Service ${1}"
+				while read pid oth ; do
+					if [ "$pid" != "-" ] ; then
+						running=`ps -p $pid | grep $pid`
+						if [ ! -z "$running" ] ; then
+#							echo -ne " is running\n"
+							return 0
+						fi
+					fi
+				done <  <($sudo ${launchctl} list | grep webdev.${1})
+#				echo -ne " is not running\n"
+				return 1
+			;;
+		esac
+	else
+		printERR "Service ${1}" "NOT_EXIST"
+#		echo "Service ${1} not exist"
+		return 1
+	fi
+}
+
+function serviceManager {
+	if [ "`getConfig "services:${1}"`" != "true" ] ; then
+		printERR "Service ${1}" "DISABLED"
+	else
+		sudo="`${1}_sudo`"
+		if [ "x${sudo}" != "x" ] ; then
+			if [ `sudo -n uptime 2>&1|grep "load"|wc -l` == 0 ] ; then
+				echo "${1} service require root privileges in order to be managed"
+				sudo -n uptime > /dev/null 2>&1
+			fi
+		fi
+	
+		case ${2} in
+			start)
+				serviceHelper ${1} check ${sudo}
+				if [ "$?" != "0" ] ; then
+					${1}_beforeStart
+					serviceHelper ${1} start ${sudo}
+					sleep 5
+					serviceHelper ${1} check ${sudo}
+					if [ "$?" == "0" ] ; then
+						${1}_afterStart
+						printOK "Starting ${1}" "OK"
+						return 0
+					else
+						serviceHelper ${1} stop ${sudo}
+						printERR "Starting ${1}" "FAIL"
+						return 1
+					fi
+				else
+					printWARN "Starting ${1}" "EXIST"
+					return 1
+				fi
+			;;
+			stop)
+				serviceHelper ${1} check ${sudo}
+				if [ "$?" == "0" ] ; then
+					${1}_beforeStop
+					serviceHelper ${1} stop ${sudo}
+					sleep 5
+					serviceHelper ${1} check ${sudo}
+					if [ "$?" != "0" ] ; then
+						${1}_afterStop
+						printOK "Stopping ${1}" "OK"
+						return 0
+					else
+						printERR "Stopping ${1}" "FAIL"
+						return 1
+					fi
+				else
+					printWARN "Stopping ${1}" "NOT_EXIST"
+					return 0
+				fi
+			;;
+			restart)
+				serviceManager ${1} stop
+				if [ "$?" == "0" ] ; then
+					serviceManager ${1} start
+				fi
+			;;
+			check)
+				serviceHelper ${1} check ${sudo} 
+				if [ "$?" == "0" ]; then
+					printOK "Checking ${1}" "RUNNING"
+					return 0
+				else
+					printERR "Checking ${1}" "NOT_RUNNING"
+					return 1
+				fi
+			;;
+			*)
+				return 1
+			;;
+		esac
+	fi
+}
+
+function generateLaunchAgentPlist {
+	template "${WEBDEV_PATH}/share/templates/LaunchAgents/webdev.${1}.plist.template" "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+}
+
+#columnCMD="/usr/bin/column -x -s $'\t'"
+#columnCMD="${WEBDEV_PATH}/share/bin/display.pl "
+
+_bashcompletion_paths="${_bashcompletion_paths} services services_enable services_disable `echo ${services} | perl -pe 's/([^\s]+)/services_\1/g'`"
+function services_opts {
+	echo "webdev_services_opts=\"${services} list start enabled enable disable stop check restart config\""
+}
+function services_enable_opts {
+	echo "webdev_services_enable_opts=\"${servicesToggled}\""
+}
+
+function services_disable_opts {
+	echo "webdev_services_disable_opts=\"${servicesEnabled}\""
+}
+
+function services_help {
+	print_help \
+				"webdev services start	start all services" \
+				"webdev services stop	start all services" \
+				"webdev services check	start all services" \
+				"webdev services restart	start all services" \
+				"webdev services nginx	manage nginx service" \
+				"webdev services mongo	manage mongo service" \
+				"webdev services mysql	manage mysql service" \
+				"webdev services phpfpm	manage php-fpm service"
+}

@@ -1,0 +1,60 @@
+KRED=$(tput setaf 1)
+KYELLOW=$(tput setaf 3)
+KNORMAL=$(tput sgr0)
+KGREEN=$(tput setaf 2)
+
+_PRINT_VERBOSE_ERROR=1
+_PRINT_VERBOSE_WARNING=2
+_PRINT_VERBOSE_INFO=3
+_PRINT_VERBOSE_DEBUG=4
+
+columnCMD="/usr/bin/column -x -s $'\t'"
+function checkPrintVerbose {
+	if [ ${PRINT_VERBOSE} -ge ${1} ] ; then
+		return 0
+	else
+		return 1
+	fi
+}
+function printOK {
+	printf "%-40s\t%20s\n" "${1}" "${KGREEN}[${2}]${KNORMAL}" | ${columnCMD}
+}
+
+function printKO {
+	printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+}
+
+function printWATCH {
+	checkPrintVerbose 4
+	if [ $? == 0 ] ; then
+		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+	fi
+}
+
+function printDEBUG {
+	checkPrintVerbose 4
+	if [ $? == 0 ] ; then
+		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+	fi
+}
+
+function printINFO {
+	checkPrintVerbose 3
+	if [ $? == 0 ] ; then
+		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+	fi
+}
+
+function printERR {
+	checkPrintVerbose 1
+	if [ $? == 0 ] ; then
+		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+	fi
+}
+
+function printWARN {
+	checkPrintVerbose 2
+	if [ $? == 0 ] ; then
+		printf "%-40s\t%20s\n" "${1}" "${KYELLOW}[${2}]${KNORMAL}" | ${columnCMD}
+	fi
+}

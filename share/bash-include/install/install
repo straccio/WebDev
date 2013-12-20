@@ -1,0 +1,24 @@
+#!/bin/bash
+#!/bin/bash
+_bashcompletion_paths="${_bashcompletion_paths} install"
+function install_opts {
+	echo "webdev_bashcompletion_opts=\"generate\""
+}
+
+function install_help {
+	print_help \
+				"webdev bashcompletion generate	start all services" \
+				"webdev bashcompletion help	this help"
+}
+
+function install_case {
+	case ${1} in
+		help|?|h)
+			showHelp
+		;;
+		*)
+			echo -e "Wrong argument\n"
+			showHelp
+		;;
+	esac
+}

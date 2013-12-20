@@ -1,0 +1,6 @@
+#!/bin/sh
+my_path=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)/../
+. ${my_path}/share/bash-include/set-environ
+export PHP_INI_SCAN_DIR=${WEBDEV_PHP_CONF_PATH}/conf.d
+export PHP_PEAR_PHP_BIN="${WEBDEV_PATH}/bin/php"
+exec ${WEBDEV_PHP_PATH}/bin/pecl "$@"

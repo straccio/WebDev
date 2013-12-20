@@ -1,0 +1,72 @@
+#!/bin/bash
+
+function nginx_sudo {
+	echo "true"
+}
+
+function services_nginx_case {
+	case ${1} in
+		start|stop|restart|check)
+			serviceManager nginx ${1}
+		;;
+		enable)
+			services_case "enable" "nginx"
+		;;
+		disable)
+			services_case "disable" "nginx"
+		;;
+		config|conf)
+			templateFromPlist "service-configs:nginx service-configs:phpfpm" "${WEBDEV_PATH}/share/templates/nginx/nginx.conf.template" "${WEBDEV_NGINX_CONF_PATH}/nginx.conf"
+		;;
+		*|help|?)
+			showHelp
+		;;
+	esac
+}
+
+function nginx_beforeStart {
+	return 0
+}
+
+function nginx_afterStart {
+	addSitesToHosts
+	return 0
+}
+
+function nginx_beforeStop {
+	removeSitesToHosts
+	return 0
+}
+
+function nginx_afterStop {
+	return 0
+}
+
+function addSitesToHosts {
+	removeSitesToHosts
+	ls -1 "${WEBDEV_NGINX_CONF_PATH}/sites-enabled/" | perl -pe 's/site-(.*)\.conf/\1/' | while read site
+	do
+		host=`getConfig "sites:${site}:server_name"`
+		sudo -n /bin/sh -c "echo \"\n127.0.0.1\t${host}\t#WEBDEV ${site}\" >> /etc/hosts"
+	done
+}
+
+function removeSitesToHosts {
+	hosts=`cat /etc/hosts | grep -v '#WEBDEV '`
+	sudo -n /bin/sh -c "echo \"${hosts}\" > /etc/hosts"
+	#sudo -n /bin/sh -c "cat /etc/hosts | grep -v '#WEBDEV ' > /etc/hosts"
+	return 0
+}
+
+function services_nginx_opts {
+	echo "webdev_services_nginx_opts=\"start stop restart check config enable disable\""
+}
+
+function services_nginx_help {
+	print_help "webdev services nginx start	start nginx service" \
+	"webdev services nginx stop	stop nginx service"  \
+	"webdev services nginx restart	restart nginx service" \
+	"webdev services nginx check	check nginx service" \
+	"webdev services nginx config	generate config files for nginx" \
+	"webdev services nginx help	this help" 
+}

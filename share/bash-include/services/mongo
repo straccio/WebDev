@@ -1,0 +1,49 @@
+#!/bin/bash
+function mongo_sudo {
+	echo ""
+}
+
+function services_mongo_case {
+	case ${1} in
+		start|stop|restart|check)
+			serviceManager mongo ${1}
+		;;
+		enable)
+			services_case "enable" "mongo"
+		;;
+		disable)
+			services_case "disable" "mongo"
+		;;
+		*|help|?|h)
+		showHelp
+		;;
+	esac	
+}
+
+function mongo_beforeStart {
+	return 0
+}
+
+function mongo_afterStart {
+	return 0
+}
+
+function mongo_beforeStop {
+	return 0
+}
+
+function mongo_afterStop {
+	return 0
+}
+
+function services_mongo_opts {
+	echo "webdev_services_mongo_opts=\"start stop restart check enable disable\""
+}
+
+function services_mongo_help {
+	print_help "webdev services mongo start	start mongo service" \
+						"webdev services mongo stop	stop mongo service" \
+						"webdev services mongo restart	restart mongo service" \
+						"webdev services mongo check	check mongo service" \
+						"webdev services mongo help	this help"
+}

@@ -1,0 +1,73 @@
+#!/bin/bash
+
+if [ -e "${HOME}/.webdev" ] ; then
+	my_path=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)/../
+	. ${my_path}/share/bash-include/set-environ
+
+	. ${WEBDEV_PATH}/share/bash-include/core
+
+	_bashcompletion_prefix=`basename $0`
+	_bashcompletion_paths="webdev"
+
+	require "print"
+	#. ${WEBDEV_PATH}/share/bash-include/config/config
+	require "config"
+	#. ${WEBDEV_PATH}/share/bash-include/bashcompletion/bashcompletion
+	require "bashcompletion"
+	#. ${WEBDEV_PATH}/share/bash-include/template/template
+	require "template"
+	#. ${WEBDEV_PATH}/share/bash-include/services/services
+	require "services"
+	#. ${WEBDEV_PATH}/share/bash-include/sites/sites
+	require "sites"
+	#. ${WEBDEV_PATH}/share/bash-include/help/help
+	require "help"
+	require "install"
+
+	#. ${WEBDEV_PATH}/share/bash-include/services/nginx
+	require "services.nginx"
+	#. ${WEBDEV_PATH}/share/bash-include/services/phpfpm
+	require "services.phpfpm"
+	#. ${WEBDEV_PATH}/share/bash-include/services/mysql
+	require "services.mysql"
+	#. ${WEBDEV_PATH}/share/bash-include/services/mongo
+	require "services.mongo"
+
+
+	commandPath=""
+
+	function webdev_opts {
+		echo "webdev_opts=\"services sites bashcompletion install\""
+	}
+
+	function showHelp {
+		eval ${commandPath}_help
+	}
+
+	function _help {
+		print_help "webdev services	manage services" \
+					"webdev sites	manage sites"
+	}
+	if [ "x${1}" == "x" ] ; then
+		showHelp
+	else
+		if [[ "services sites bashcompletion --home --verbose " =~ "${1} " ]] ; then
+			case ${1} in
+				--home)
+					echo ${WEBDEV_PATH}
+				;;
+				*)
+					commandPath=${1}
+					${1}_case "${@:2}"
+				;;
+			esac
+		else
+			showHelp
+		fi
+	fi
+else
+	echo "Install"
+	mkdir -p "${WEBDEV}/.webdev/bin"
+	mkdir -p "${WEBDEV}/.webdev/share/bash-include/install"
+	cp ${0} "${WEBDEV}/.webdev/bin/"
+fi

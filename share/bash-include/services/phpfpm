@@ -1,0 +1,150 @@
+#!/bin/bash
+function phpfpm_sudo {
+	echo ""
+}
+
+phpfpmExtensions=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/'`
+phpfpmExtensionsEnabled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d/" | grep -v "\.extra\.ini" | perl -pe 's/ext-(.*)\.ini/\1/'`
+phpfpmExtensionsToggled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | grep -Ev "\`echo ${phpfpmExtensionsEnabled} | tr ' ' '|' \`"`
+
+function services_phpfpm_case {
+	case ${1} in
+		start|stop|restart|check)
+			serviceManager phpfpm ${1}
+		;;
+		enable)
+			services_case "enable" "phpfpm"
+		;;
+		disable)
+			services_case "disable" "phpfpm"
+		;;
+		config)
+			templateFromPlist "service-configs:php" "${WEBDEV_PATH}/share/templates/php/php.ini.template" "${WEBDEV_PHP_CONF_PATH}/php.ini"
+			templateFromPlist "service-configs:phpfpm" "${WEBDEV_PATH}/share/templates/php/php-fpm.conf.template" "${WEBDEV_PHP_CONF_PATH}/php-fpm.conf"
+			pear config-set php_ini ${WEBDEV_PHP_CONF_PATH}/php.ini > /dev/null 2>&1
+			pear config-set php_bin ${WEBDEV_PATH}/bin/php > /dev/null 2>&1
+		;;
+		ext|extension)
+			commandPath=${commandPath}_extension
+			${commandPath}_case "${@:2}"
+		;;
+		*|help|?)
+			showHelp
+		;;
+	esac
+}
+
+function services_phpfpm_extension_case {
+	case ${1} in
+		enable|ena)
+			if [ "x${2}" == "x" ]; then
+				echo -e "Missing argument\n"
+				showHelp
+			else
+				if [ -a "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/ext-${2}.ini" ] ; then
+					if [ -a "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${2}.ini" ] ; then
+						printWARN "PHP extension ${2}" "ALREADY_ENABLED"
+					else
+						ln -s "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/ext-${2}.ini" "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${2}.ini"
+					fi
+					if [ -a "${WEBDEV_PHP_CONF_PATH}/conf.d-extra/ext-${2}.ini" ] ; then
+						ln -s "${WEBDEV_PHP_CONF_PATH}/conf.d-extra/ext-${2}.ini" "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${2}.extra.ini"
+					fi
+					printOK "PHP extension ${2}" "ENABLED"
+					${WEBDEV_PATH}/bin/webdev bashcompletion generate
+					#echo "PHP extension ${2} enabled"
+				else
+					printERR "PHP extension ${2}" "NOT_FOUND"
+#					echo "PHP extension ${2} not found"
+				fi
+			fi
+		;;
+		disable|dis)
+			if [ "x${2}" == "x" ]; then
+				echo -e "Missing argument\n"
+				showHelp
+			else
+				if [ -a "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${2}.ini" ] ; then
+					rm "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${2}.ini"
+					if [ -a "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${2}.extra.ini" ] ; then
+						rm "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${2}.extra.ini"
+					fi
+					printOK "PHP extension ${2}" "DISABLED"
+					${WEBDEV_PATH}/bin/webdev bashcompletion generate
+				else
+					if [ -a "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/ext-${2}.ini" ] ; then
+						printWARN "PHP extension ${2}" "ALREADY_DISABLED"
+					else
+						printERR "PHP extension ${2}" "NOT_FOUND"
+					fi
+				fi
+			fi
+		;;
+		enabled)
+			ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d/" | grep -v "\.extra\.ini" | perl -pe 's/ext-(.*)\.ini/\1/'
+		;;
+		list)
+			ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | while read extension
+			do
+				if [ -a "${WEBDEV_PHP_CONF_PATH}/conf.d/ext-${extension}.ini" ] ; then
+					printOK "${extension}" "ENABLED"
+				else
+					printERR "${extension}" "DISABLED"
+				fi
+			done
+		;;
+		*|help|?)
+			showHelp
+		;;
+	esac
+}
+
+function phpfpm_beforeStart {
+	return 0
+}
+
+function phpfpm_afterStart {
+	return 0
+}
+
+function phpfpm_beforeStop {
+	return 0
+}
+
+function phpfpm_afterStop {
+	return 0
+}
+
+_bashcompletion_paths="${_bashcompletion_paths} services_phpfpm_extension services_phpfpm_extension_enable services_phpfpm_extension_disable"
+function services_phpfpm_opts {
+	echo "webdev_services_phpfpm_opts=\"start stop restart check extension config enable disable\""
+}
+
+function services_phpfpm_help {
+	print_help "webdev services phpfpm start	start php-fpm service" \
+						"webdev services phpfpm stop	stop php-fpm service" \
+						"webdev services phpfpm restart	restart php-fpm service" \
+						"webdev services phpfpm check	check php-fpm service" \
+						"webdev services phpfpm config	generate config files for php" \
+						"webdev services phpfpm extension	manage php extensions" \
+						"webdev services phpfpm help	this help"
+}
+
+function services_phpfpm_extension_opts {
+	echo "webdev_services_phpfpm_extension_opts=\"enable disable enabled list\""
+}
+
+function services_phpfpm_extension_enable_opts {
+	echo "webdev_services_phpfpm_extension_enable_opts=\"${phpfpmExtensionsToggled}\""
+}
+
+function services_phpfpm_extension_disable_opts {
+	echo "webdev_services_phpfpm_extension_disable_opts=\"${phpfpmExtensionsEnabled}\""	
+}
+
+function services_phpfpm_extension_help {
+	print_help "webdev services phpfpm extension enable <extension_name>	enable php extension" \
+						"webdev services phpfpm extension disable <extension_name>	enable php extension" \
+						"webdev services phpfpm extension enabled	list enabled php extensions" \
+						"webdev services phpfpm extension list	list available php extensions"
+}

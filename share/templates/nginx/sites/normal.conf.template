@@ -1,0 +1,14 @@
+server {
+	listen ${_port};
+ 
+	server_name ${_server_name};
+	root ${_root}/web;
+ 
+	error_log ${WEBDEV_LOG_PATH}/${_name}_error.log;
+	access_log ${WEBDEV_LOG_PATH}/${_name}_access.log;
+ 
+	# Deny all . files
+	location ~ /\.[^(sencha)] {
+		deny all;
+	}
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>KeepAlive</key>
+		<true/>
+		<key>Label</key>
+		<string>webdev.phpfpm</string>
+		<key>EnvironmentVariables</key>
+    <dict>
+       <key>PHP_INI_SCAN_DIR</key>
+       <string>${WEBDEV_PHP_CONF_PATH}/conf.d</string>
+    </dict>
+		<key>ProgramArguments</key>
+		<array>
+			<string>${WEBDEV_PHP_PATH}/sbin/php-fpm</string>
+			<string>--fpm-config</string>
+			<string>${WEBDEV_PHP_CONF_PATH}/php-fpm.conf</string>
+			<string>-c</string>
+			<string>${WEBDEV_PHP_CONF_PATH}/php.ini</string>
+		</array>
+		<key>RunAtLoad</key>
+		<true/>
+		<key>LaunchOnlyOnce</key>
+		<true/>
+<!--
+		<key>UserName</key>
+		<string>${LOGNAME}</string>
+-->
+		<key>WorkingDirectory</key>
+		<string>/usr/local/var</string>
+		<key>StandardErrorPath</key>
+		<string>${WEBDEV_LOG_PATH}/php-fpm_console.log</string>
+		<key>StandardOutPath</key>
+		<string>${WEBDEV_LOG_PATH}/php-fpm_console.log</string>
+	</dict>
+</plist>

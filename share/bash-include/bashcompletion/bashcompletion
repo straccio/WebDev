@@ -1,0 +1,33 @@
+#!/bin/bash
+_bashcompletion_paths="${_bashcompletion_paths} bashcompletion"
+function bashcompletion_opts {
+	echo "webdev_bashcompletion_opts=\"generate\""
+}
+
+function bashcompletion_help {
+	print_help \
+				"webdev bashcompletion generate	start all services" \
+				"webdev bashcompletion help	this help"
+}
+
+function bashcompletion_case {
+	case ${1} in
+		generate)
+			if [ -e "${WEBDEV_PATH}/etc/bash_completion.d/paths" ] ; then
+				rm ${WEBDEV_PATH}/etc/bash_completion.d/paths
+			fi
+			for path in ${_bashcompletion_paths}
+			do
+				${path}_opts >> ${WEBDEV_PATH}/etc/bash_completion.d/paths
+			done
+
+		;;
+		help|?|h)
+			showHelp
+		;;
+		*)
+			echo -e "Wrong argument\n"
+			showHelp
+		;;
+	esac
+}

@@ -1,0 +1,34 @@
+. "${WEBDEV_REQUIRE_PATH}/print/print"
+
+core_require="core print print.print "
+
+function require {
+	if [ "x${1}" == "x" ] ; then
+		return 1
+	else
+		requirePath=${WEBDEV_REQUIRE_PATH}/`echo ${1} | tr "\." "\/"`
+#		if [[ ${services} =~ ${1} ]] ; then
+		if [[ ${core_require} =~ ${1} ]] ; then
+			printINFO "class ${1}	${requirePath}" "ALREADY_LOADED"
+			return 2
+		else
+			if [ -d "${requirePath}" ] ; then
+				className=`echo ${1} | perl -pe 's/.*\.([^.]*)$/\1/'`
+				requirePath="${requirePath}/${className}"
+				if [ -e "${requirePath}" ] ; then
+					core_require="${core_require} ${1} "
+					. "${requirePath}"
+					return 0
+				fi
+			else
+				if [ -e "${requirePath}" ] ; then
+					core_require="${core_require} ${1}"
+					. "${requirePath}"
+					return 0
+				fi
+			fi
+		fi
+		printERR "required class \"${1}\"	path \"${requirePath}\"" "NOT_FOUND"
+		exit 1
+	fi
+}

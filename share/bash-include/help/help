@@ -1,0 +1,27 @@
+#!/bin/bash
+
+function print_help {
+		columnCMD="/usr/bin/column "
+		IFS=$'\t'
+		maxlength=0;
+
+		for ARG in "$@"
+		do
+			read -a array <<< "$ARG"
+			stringlength=${#array[0]}
+			if [ ${stringlength} -gt ${maxlength} ] ; then
+				maxlength=${stringlength}
+			fi
+		done
+
+		maxlength=-$((10+${maxlength}))
+		printf_format="%${maxlength}s\t:\t%s\n"
+		
+		echo "Usage:"
+		
+		for ARG in "$@"
+		do
+			read -a array <<< "$ARG"
+			printf "   ${printf_format}" "${array[0]}" "${array[1]}" | /usr/bin/column -x -s $'\t'
+		done
+}

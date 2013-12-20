@@ -1,0 +1,66 @@
+
+#user  nobody;
+worker_processes  ${nginx_worker_processes};
+
+error_log  ${WEBDEV_LOG_PATH}/nginx_error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  ${nginx_worker_connections};
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+		
+		sendfile on;
+		tcp_nopush on;
+		keepalive_timeout 65;
+		types_hash_max_size 2048;
+		
+		access_log ${WEBDEV_LOG_PATH}/nginx_access.log;
+		error_log ${WEBDEV_LOG_PATH}/nginx_error.log;
+		
+		##
+		# Gzip Settings
+		##
+
+		gzip on;
+		gzip_disable "msie6";
+
+		gzip_vary on;
+		gzip_proxied any;
+		gzip_comp_level 6;
+		gzip_buffers 16 8k;
+		gzip_http_version 1.1;
+		gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+		
+		#default location
+		
+		server {
+			listen ${nginx_port};
+			root ${nginx_root};
+			index index.html index.php;
+			
+			# serve static files directly
+      location ~* ^.+.(jpg|jpeg|png|gif|css|png|js|ico|html|xml|txt|ttf|eot|svg|otf|woff)$ {
+          access_log        off;
+          expires           max;
+      }
+			
+			location ~ \.php$ {
+				try_files \$uri =404;
+        fastcgi_pass unix:${phpfpm_listen};
+        fastcgi_index index.php;
+        include ${WEBDEV_NGINX_CONF_PATH}/fastcgi_params;
+      }
+		}
+		
+		include mods-enabled/*.conf;
+		include sites-enabled/*.conf;
+}

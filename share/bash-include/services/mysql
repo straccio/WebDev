@@ -1,0 +1,49 @@
+#!/bin/bash
+function mysql_sudo {
+	echo ""
+}
+
+function services_mysql_case {
+	case $1 in
+		start|stop|restart|check)
+			serviceManager mysql ${1}
+		;;
+		enable)
+			services_case "enable" "mysql"
+		;;
+		disable)
+			services_case "disable" "mysql"
+		;;
+		*|help|?|h)
+			showHelp
+		;;
+	esac
+}
+
+function mysql_beforeStart {
+	return 0
+}
+
+function mysql_afterStart {
+	return 0
+}
+
+function mysql_beforeStop {
+	return 0
+}
+
+function mysql_afterStop {
+	return 0
+}
+
+function services_mysql_opts {
+	echo "webdev_services_mysql_opts=\"start stop restart check enable disable\""
+}
+
+function services_mysql_help {
+	print_help "webdev services mysql start	start mysql service" \
+						"webdev services mysql stop	stop mysql service" \
+						"webdev services mysql restart	restart mysql service" \
+						"webdev services mysql check	check mysql service" \
+						"webdev services mysql help	this help"
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>KeepAlive</key>
+		<true/>
+		<key>EnableGlobbing</key>
+		<true/>
+		<key>Label</key>
+		<string>webdev.mysql</string>
+		<key>ProgramArguments</key>
+		<array>
+			<string>${WEBDEV_MYSQL_PATH}/bin/mysqld_safe</string>
+			<string>--defaults-file=${WEBDEV_MYSQL_CONF_PATH}/my.cnf</string>
+		</array>
+		<key>RunAtLoad</key>
+		<true/>
+		<key>WorkingDirectory</key>
+		<string>${WEBDEV_PATH}/var</string>
+		<key>UserName</key>
+		<string>${LOGNAME}</string>
+		<key>StandardErrorPath</key>
+		<string>${WEBDEV_LOG_PATH}/mysql_console.log</string>
+		<key>StandardOutPath</key>
+		<string>${WEBDEV_LOG_PATH}/mysql_console.log</string>
+	</dict>
+</plist>

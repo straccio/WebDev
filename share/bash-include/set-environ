@@ -1,0 +1,65 @@
+#!/bin/bash
+set_env_var () {
+    eval export $1=\""$2"\"
+    set_launchctl_env "$1" "$2"
+}
+unset_env_var () {
+    unset $1
+    unset_launchctl_env "$1"
+}
+
+set_launchctl_env () {
+    eval launchctl setenv "$1" \""$2"\"    
+#	echo launchctl setenv "$1" \""$2"\" >>$LAUNCHCTL_ENV_VARS
+} 
+unset_launchctl_env () {
+    eval launchctl unsetenv "$1"
+#    echo launchctl unsetenv "$1" >>$LAUNCHCTL_ENV_VARS
+}
+
+
+WEBDEV_PATH=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)/
+WEBDEV_PATH=`echo $WEBDEV_PATH | perl -pe "s/\/share\/[^\/]*\///"`
+
+#export WEBDEV_PATH
+
+. ${WEBDEV_PATH}/share/bash-include/config/config
+
+WEBDEV_REQUIRE_PATH=${WEBDEV_PATH}/share/bash-include
+
+#set_env_var WEBDEV_PATH $WEBDEV_PATH
+
+WEBDEV_PHP_VERSION=`getConfig "php-version"`
+#set_env_var WEBDEV_PHP_VERSION `$plistCmd "print php-version" "$WEBDEV_PATH/webdev-config.plist"`
+WEBDEV_PHP_SHORT_VERSION=`echo ${WEBDEV_PHP_VERSION} | perl -pe "s/\.//"`
+#set_env_var WEBDEV_PHP_SHORT_VERSION `echo ${WEBDEV_PHP_VERSION} | perl -pe "s/\.//"`
+#export WEBDEV_SERVICES_NGINX_ENABLED=`$plistCmd "print services:nginx"  "$WEBDEV_PATH/webdev-config.plist"`
+#set_env_var WEBDEV_SERVICES_NGINX_ENABLED `$plistCmd "print services:nginx"  "$WEBDEV_PATH/webdev-config.plist"`
+#export WEBDEV_SERVICES_PHPFPM_ENABLED=`$plistCmd "print services:php-fpm"  "$WEBDEV_PATH/webdev-config.plist"`
+#set_env_var WEBDEV_SERVICES_PHPFPM_ENABLED `$plistCmd "print services:php-fpm"  "$WEBDEV_PATH/webdev-config.plist"`
+#export WEBDEV_SERVICES_MYSQL_ENABLED=`$plistCmd "print services:mysql"  "$WEBDEV_PATH/webdev-config.plist"`
+#set_env_var WEBDEV_SERVICES_MYSQL_ENABLED `$plistCmd "print services:mysql"  "$WEBDEV_PATH/webdev-config.plist"`
+#export WEBDEV_SERVICES_MONGO_ENABLED=`$plistCmd "print services:mongo"  "$WEBDEV_PATH/webdev-config.plist"`
+#set_env_var WEBDEV_SERVICES_MONGO_ENABLED `$plistCmd "print services:mongo"  "$WEBDEV_PATH/webdev-config.plist"`
+
+
+#set_env_var WEBDEV_PHP_CONF_PATH ${WEBDEV_PATH}/etc/php/${WEBDEV_PHP_VERSION}
+WEBDEV_PHP_PATH=`brew --prefix php${WEBDEV_PHP_SHORT_VERSION}`
+WEBDEV_PHP_CONF_PATH=${WEBDEV_PATH}/etc/php/${WEBDEV_PHP_VERSION}
+#set_env_var WEBDEV_PHP_PATH `brew --prefix php${WEBDEV_PHP_SHORT_VERSION}`
+WEBDEV_NGINX_PATH=`brew --prefix nginx`
+WEBDEV_NGINX_CONF_PATH=${WEBDEV_PATH}/etc/nginx
+#set_env_var WEBDEV_NGINX_PATH `brew --prefix nginx`
+WEBDEV_MONGO_PATH=`brew --prefix mongo`
+WEBDEV_MONGO_CONF_PATH=${WEBDEV_PATH}/etc/mongo
+#set_env_var WEBDEV_MONGO_PATH `brew --prefix mongo`
+WEBDEV_MYSQL_PATH=`brew --prefix mysql`
+WEBDEV_MYSQL_CONF_PATH=${WEBDEV_PATH}/etc/mysql
+#set_env_var WEBDEV_MYSQL_PATH `brew --prefix mysql`
+
+WEBDEV_LOG_PATH=`getConfig "log-path"`
+if [ ! -d "${WEBDEV_LOG_PATH}" ]; then
+	mkdir "${WEBDEV_LOG_PATH}"
+fi
+PRINT_VERBOSE=2
+PATH=${WEBDEV_PATH}/bin:$PATH;

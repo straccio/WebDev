@@ -1,0 +1,60 @@
+#!/bin/bash
+plistCmd="/usr/libexec/PlistBuddy -c"
+
+function template {
+	fin=${1}
+	fout=${2}
+	if [ -a "${fin}" ] ; then
+		ftmp=/tmp/webdev-`jot -r 1  2000 65000`.template
+		echo "cat  << EOF" > ${ftmp}
+		cat ${fin} >> ${ftmp}
+		echo "EOF" >> ${ftmp}
+	
+		. ${ftmp} > ${fout}
+		rm ${ftmp}
+		return 0
+	else
+		return 1
+	fi
+}
+
+function templateFromPlist {
+#	plist_file=${1}
+	plist_dict=${1}
+	fin=${2}
+	fout=${3}
+#	if [ [ -a "${fin}" ] && [ -a "${plist_file}" ] ] ; then
+		ftmp=/tmp/webdev-`jot -r 1  2000 65000`.template
+		echo "#Start Vars from ${plist_file} -> ${plist_dict}" > ${ftmp}
+		for dict in ${plist_dict}
+		do
+			dict_pref=`echo ${dict} | perl -pe 's/.*:([^:]*)$/\1/'`
+			#${plistCmd} "print ${dict}" ${plist_file} |perl -pe 's/^\s*([^\s]*)\s=\s(.*)/\1="\2"/'| tail -n +2 |sed '$d' | perl -pe "s/^/${dict_pref}_/" >> ${ftmp}
+			getConfig "${dict}" |perl -pe 's/^\s*([^\s]*)\s=\s(.*)/\1="\2"/'| tail -n +2 |sed '$d' | perl -pe "s/^/${dict_pref}_/" >> ${ftmp}
+		done
+		echo "cat  << EOF" >> ${ftmp}
+		cat ${fin} >> ${ftmp}
+#		echo "EOF" >> ${ftmp}
+		
+		. ${ftmp} > ${fout}
+		rm ${ftmp}
+		return 0
+
+#	else
+#		return 1
+#	fi
+	
+} 
+
+
+#function generateLaunchAgentPlistOLD {
+#	cat ${WEBDEV_PATH}/share/templates/LaunchAgents/webdev.${1}.plist.template > ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist
+#	cat ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist | perl -pe  "s/\\$\\{WEBDEV_PATH\\}/`echo ${WEBDEV_PATH}|perl -pe 's/([\/\\\.\[\]\{\}])/\\\\\1/g'`/g" > ${WEBDEV_PATH}/Library/LaunchAgents/.webdev.${1}.plist.tmp
+#	mv ${WEBDEV_PATH}/Library/LaunchAgents/.webdev.${1}.plist.tmp ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist 
+#	for varname in  WEBDEV_PHP_VERSION WEBDEV_PHP_SHORT_VERSION WEBDEV_SERVICES_NGINX_ENABLED WEBDEV_SERVICES_PHPFPM_ENABLED WEBDEV_SERVICES_MYSQL_ENABLED WEBDEV_SERVICES_MONGO_ENABLED WEBDEV_PHP_CONF_PATH WEBDEV_PHP_PATH WEBDEV_NGINX_PATH WEBDEV_MONGO_PATH WEBDEV_MYSQL_PATH WEBDEV_LOG_PATH LOGNAME
+#	do
+#		varVal=$(eval echo $`echo $varname`)
+#		cat ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist | perl -pe  "s/\\$\\{${varname}\\}/`echo ${varVal}|perl -pe 's/([\/\\\.\[\]\{\}])/\\\\\1/g'`/g" > ${WEBDEV_PATH}/Library/LaunchAgents/.webdev.${1}.plist.tmp
+#		mv ${WEBDEV_PATH}/Library/LaunchAgents/.webdev.${1}.plist.tmp ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist
+#	done
+#}
