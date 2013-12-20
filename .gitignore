@@ -1,2 +1,8 @@
 
 etc/bash_completion.d/paths
+etc/mongo
+etc/mysql
+etc/nginx
+etc/php
+Library/LaunchAgents/*
+var
