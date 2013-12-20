@@ -66,6 +66,6 @@ if [ -e "${HOME}/.webdev" ] ; then
 		fi
 	fi
 else
-	echo "Install base environ"
+	echo "Installing base environment"
 	git clone https://github.com/straccio/WebDev.git ~/.webdev
 fi
