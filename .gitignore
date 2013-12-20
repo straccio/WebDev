@@ -6,3 +6,7 @@ etc/nginx
 etc/php
 Library/LaunchAgents/*
 var
+
+webdev.sublime-project
+
+webdev.sublime-workspace
