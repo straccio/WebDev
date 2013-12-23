@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sites=`getConfig "sites" | grep "= Dict {"| perl -pe 's/\s*(.*) = Dict.*/\1/'`
-sitesEnabled=`ls -1 ${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-* |perl -pe 's/.*site-(.*)\.conf/\1/'`
+sitesEnabled=`ls -1 ${WEBDEV_NGINX_CONF_PATH}/sites-enabled/site-*  2> /dev/null | perl -pe 's/.*site-(.*)\.conf/\1/'`
 sitesToggled=`echo ${sites} | perl -pe "s/ ?(\`echo ${sitesEnabled} | tr ' ' '|'\`)//g" | perl -pe 's/^ //' | perl -pe 's/ $//'`
 siteConfigs='port root server_name type name'
 
@@ -80,6 +80,7 @@ function sites_case {
 		;;
 	esac
 }
+
 _bashcompletion_paths="${_bashcompletion_paths} sites sites_config sites_enable sites_disable `echo ${sites} | perl -pe 's/([^\s]+)/sites_\1/g'`"
 function sites_opts {
 	echo "webdev_sites_opts=\"list enabled enable disable config ${sites}\""

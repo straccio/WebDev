@@ -1,24 +1,43 @@
 #!/bin/bash
-#!/bin/bash
 _bashcompletion_paths="${_bashcompletion_paths} install"
+servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install | grep -v "^install"|tr "\\n" ' '`
+
+for package in ${servicesInstallable}
+do
+	require "install.${package}"
+done
+
 function install_opts {
-	echo "webdev_bashcompletion_opts=\"generate\""
+	echo "webdev_install_opts=\"${servicesInstallable}\""
 }
 
 function install_help {
 	print_help \
-				"webdev bashcompletion generate	start all services" \
-				"webdev bashcompletion help	this help"
+				"webdev install <package>	install selected package" \
+				"webdev help	this help"
 }
 
 function install_case {
+
+
 	case ${1} in
+		# service|package)
+		# 	install_${1}_case ${@}
+		# ;;
 		help|?|h)
 			showHelp
 		;;
 		*)
-			echo -e "Wrong argument\n"
-			showHelp
+			if [ "x${1}" == "x" ] ; then
+				echo -e "Wrong argument\n"
+				showHelp
+			else
+				if [[ ${servicesInstallable} =~ ${1} ]] ; then
+					install_${1}_case "${@}"
+				else
+					printKO "Service ${1}" "NOT_AVAILABLE"
+				fi
+			fi
 		;;
 	esac
 }

@@ -1,0 +1,28 @@
+#!/bin/bash
+_bashcompletion_paths="${_bashcompletion_paths} install_php_php55"
+
+
+function install_php_php55_opts {
+	echo "webdev_install_php_php55_opts=\"`brew options php55 | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
+}
+
+function install_php_php55_case {
+	case ${1} in		
+		install)
+			brew list php55 > /dev/null 2>&1
+			if [ $? == 0 ] ; then
+				printKO "Service php55" "ALREADY_INSTALLED"
+				return 1
+			else
+				brew install php55 "${@:1}" --with-fpm > /dev/null 2>&1
+				ret=$?
+				if [ $? == 0 ] ; then
+					printOK "Service php55" "INSTALLED"
+				else
+					printKO "Service php55" "FAILED"
+				fi
+				return ${ret}
+			fi
+		;;
+	esac
+}

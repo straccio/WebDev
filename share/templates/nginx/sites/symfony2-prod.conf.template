@@ -24,7 +24,7 @@ server {
 		fastcgi_split_path_info ^(.+\.php)(/.*)$;
 		include fastcgi_params;
 		fastcgi_index app.php;
-		fastcgi_pass unix:${phpfpm_listen};
+		fastcgi_pass ${phpfpm_listen};
 	}
  
 	# Statics

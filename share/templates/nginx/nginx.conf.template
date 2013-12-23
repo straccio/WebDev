@@ -1,5 +1,5 @@
 
-#user  nobody;
+user  ${LOGNAME} nobody;
 worker_processes  ${nginx_worker_processes};
 
 error_log  ${WEBDEV_LOG_PATH}/nginx_error.log;
@@ -15,7 +15,7 @@ events {
 
 
 http {
-    include       mime.types;
+    include       ${WEBDEV_NGINX_CONF_PATH}/mime.types;
     default_type  application/octet-stream;
 		
 		sendfile on;
@@ -48,17 +48,17 @@ http {
 			index index.html index.php;
 			
 			# serve static files directly
-      location ~* ^.+.(jpg|jpeg|png|gif|css|png|js|ico|html|xml|txt|ttf|eot|svg|otf|woff)$ {
-          access_log        off;
-          expires           max;
-      }
+		    location ~* ^.+.(jpg|jpeg|png|gif|css|png|js|ico|html|xml|txt|ttf|eot|svg|otf|woff)$ {
+		        access_log        off;
+		        expires           max;
+		    }
 			
 			location ~ \.php$ {
 				try_files \$uri =404;
-        fastcgi_pass unix:${phpfpm_listen};
-        fastcgi_index index.php;
-        include ${WEBDEV_NGINX_CONF_PATH}/fastcgi_params;
-      }
+		        fastcgi_pass ${phpfpm_listen};
+		        fastcgi_index index.php;
+		        include ${WEBDEV_NGINX_CONF_PATH}/fastcgi_params;
+		    }
 		}
 		
 		include mods-enabled/*.conf;

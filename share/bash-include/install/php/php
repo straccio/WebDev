@@ -1,0 +1,29 @@
+#!/bin/bash
+#servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/service | grep -v "^service"|tr "\\n" ' '`
+phpversions=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/php | grep -vE '^php$'| tr "\\n" ' '`
+
+_bashcompletion_paths="${_bashcompletion_paths} install_php"
+
+for version in ${phpversions}
+do
+	require "install.php.${version}"
+done
+
+
+function install_php_opts {
+	echo "webdev_install_php_opts=\"${phpversions}\""
+}
+
+function install_php_case {
+	if [ "x${2}" == "x" ] ; then
+		echo "Wrong argument"
+		showHelp
+	else
+		if [[ ${phpversions} =~ ${2} ]] ; then
+			install_php_${2}_case ${@:3} 
+		else
+			echo "Wrong argument"
+			showHelp
+		fi
+	fi 
+}

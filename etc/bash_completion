@@ -9,7 +9,8 @@ _webdev (){
 
     SAVE_IFS=${IFS}
     IFS="_"
-	optPath=`echo "${COMP_WORDS[*]}" | perl -pe "s/(.*)_([^_]*)/\1/"`
+	optPath=`echo "${COMP_WORDS[*]}"  | perl -pe 's/(.*)_([^_]*)/\1/g' | perl -pe 's/_--[^_]*//g'`
+
 	IFS=${SAVE_IFS}
 
 	if [ -e "${WEBDEV_PATH}/etc/bash_completion.d/paths" ] ; then
@@ -26,14 +27,13 @@ _webdev (){
 #    if [ "x${optPath}" == "xwebdev" ] ; then
 #    	opts="services sites"
 #    else
-    	if [ "x${cur}" == "x" ] ; then
-    		eval opts=\"\$\{${optPath}_opts\}\"
-    	else
-    		eval opts=\"\$\{${optPath}_${cur}_opts\}\"
-    		if [ "x${opts}" == "x" ] ; then
-    			eval opts=\"\$\{${optPath}_opts\}\"
-    		fi
-    	fi
+	if [ "x${cur}" == "x" ] ; then
+		eval opts=\"\$\{${optPath}_opts\}\"
+	else        
+		if [ "x${opts}" == "x" ] ; then
+			eval opts=\"\$\{${optPath}_opts\}\"
+		fi
+	fi
 #	fi
 	if [ "x${opts}" == "x" ] ; then
 		return 1

@@ -18,13 +18,27 @@
 		</array>
 		<key>WorkingDirectory</key>
 		<string>/usr/local</string>
+<!--		
 		<key>UserName</key>
 		<string>${LOGNAME}</string>
+-->
 		<key>NetworkState</key>
 		<true/>
+	    <key>LaunchOnlyOnce</key>
+	    <true/>
 		<key>StandardErrorPath</key>
 		<string>${WEBDEV_LOG_PATH}/nginx_console.log</string>
 		<key>StandardOutPath</key>
 		<string>${WEBDEV_LOG_PATH}/nginx_console.log</string>
+<!--		
+		<key>Sockets</key>
+		<dict>
+		    <key>Listeners</key>
+		    <dict>
+		        <key>SockServiceName</key>
+		        <string>http</string>
+		    </dict>
+		</dict>
+		-->
 	</dict>
 </plist>

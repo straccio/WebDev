@@ -1,0 +1,93 @@
+#!/bin/bash
+#servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/service | grep -v "^service"|tr "\\n" ' '`
+_bashcompletion_paths="${_bashcompletion_paths} install_nginx"
+
+function install_nginx_opts {
+	echo "webdev_install_nginx_opts=\"`brew options nginx | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
+}
+
+function install_nginx_case {
+	case ${1} in		
+		install)
+			brew list nginx > /dev/null 2>&1
+			if [ $? == 0 ] ; then
+				printKO "Service nginx" "ALREADY_INSTALLED"
+				nginx_postInstall > /dev/null 2>&1
+				return 1
+			else
+				brew install nginx "${@:2}" #> /dev/null 2>&1
+				ret=$?
+				if [ $? == 0 ] ; then
+					printOK "Service nginx" "INSTALLED"
+					nginx_postInstall > /dev/null 2>&1
+				else
+					printKO "Service nginx" "FAILED"
+				fi
+				return ${ret}
+			fi
+		;;
+	esac
+}
+
+function nginx_postInstall {
+	if [ ! -d "${WEBDEV_PATH}/etc/nginx" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/nginx"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/nginx/mods-available" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/nginx/mods-available"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/nginx/mods-enabled" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/nginx/mods-enabled"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/nginx/sites-available" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/nginx/sites-available"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/nginx/sites-enabled" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/nginx/sites-enabled"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/nginx/conf.d" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/nginx/conf.d"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/nginx/ssl" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/nginx/ssl"
+	fi
+		
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/fastcgi.conf "] ; then
+		cp "`brew --prefix`/etc/nginx/fastcgi.conf" "${WEBDEV_PATH}/etc/nginx/"
+	fi
+
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/fastcgi_params" ] ; then
+		cp "`brew --prefix`/etc/nginx/fastcgi_params" "${WEBDEV_PATH}/etc/nginx/"
+		echo "fastcgi_param	SCRIPT_FILENAME	\$document_root\$fastcgi_script_name;" >> "${WEBDEV_PATH}/etc/nginx/fastcgi_params"
+	fi
+
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/scgi_params" ] ; then
+		cp "`brew --prefix`/etc/nginx/scgi_params" "${WEBDEV_PATH}/etc/nginx/"
+	fi
+
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/uwsgi_params" ] ; then
+		cp "`brew --prefix`/etc/nginx/uwsgi_params" "${WEBDEV_PATH}/etc/nginx/"
+	fi
+
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/mime.types" ] ; then
+		cp "`brew --prefix`/etc/nginx/mime.types" "${WEBDEV_PATH}/etc/nginx/"
+	fi
+
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/win-utf" ] ; then
+		cp "`brew --prefix`/etc/nginx/win-utf" "${WEBDEV_PATH}/etc/nginx/"
+	fi
+
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/koi-utf" ] ; then
+		cp "`brew --prefix`/etc/nginx/koi-utf" "${WEBDEV_PATH}/etc/nginx/"
+	fi
+
+	if [ ! -e "${WEBDEV_PATH}/etc/nginx/koi-win" ] ; then
+		cp "`brew --prefix`/etc/nginx/koi-win" "${WEBDEV_PATH}/etc/nginx/"
+	fi
+}

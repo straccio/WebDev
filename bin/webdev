@@ -46,12 +46,13 @@ if [ -e "${HOME}/.webdev" ] ; then
 
 	function _help {
 		print_help "webdev services	manage services" \
-					"webdev sites	manage sites"
+					"webdev sites	manage sites" \
+					"webdev install	install services/packages"
 	}
 	if [ "x${1}" == "x" ] ; then
 		showHelp
 	else
-		if [[ "services sites bashcompletion --home --verbose " =~ "${1} " ]] ; then
+		if [[ "services sites bashcompletion install update --home --verbose " =~ "${1} " ]] ; then
 			case ${1} in
 				--home)
 					echo ${WEBDEV_PATH}

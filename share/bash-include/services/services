@@ -62,25 +62,32 @@ function serviceHelper {
 		sudo=""
 		if [ "x${3}" != "x" ]; then
 			sudo="sudo -n "
+			CTL_PATH=/Library/LaunchDaemons
 			if [ -a "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist" ] ; then
-				sudo chown ${LOGNAME}:staff "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+				${sudo} chown ${LOGNAME}:staff "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
 			fi
 			generateLaunchAgentPlist "${1}"
-			sudo chown root:admin "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
-			sudo chmod 644 "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+			${sudo} chown root:admin "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+			${sudo} chmod 644 "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist"
+			${sudo} mv "${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist" "${CTL_PATH}"
 		else
+			CTL_PATH=${WEBDEV_PATH}/Library/LaunchAgents/
 			generateLaunchAgentPlist "${1}"
 		fi
 		case ${2} in
 			start)
 #				echo "Starting service ${1}"
-				$sudo ${launchctl} load -w ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist > /dev/null 2>&1
-				return $?
+				${sudo} ${launchctl} load -w ${CTL_PATH}/webdev.${1}.plist > /dev/null 2>&1
+				ret=$?
+				${sudo} rm -f ${CTL_PATH}/webdev.${1}.plist
+				return ${ret}
 			;;
 			stop)
 #				echo "Stopping service ${1}"
-				$sudo ${launchctl} unload -w ${WEBDEV_PATH}/Library/LaunchAgents/webdev.${1}.plist > /dev/null 2>&1
-				return $?
+				${sudo} ${launchctl} unload -w ${CTL_PATH}/webdev.${1}.plist > /dev/null 2>&1
+				ret=$?
+				${sudo} rm -f ${CTL_PATH}/webdev.${1}.plist
+				return ${ret}
 			;;
 			check)
 #				echo -n "Service ${1}"
@@ -112,7 +119,7 @@ function serviceManager {
 		if [ "x${sudo}" != "x" ] ; then
 			if [ `sudo -n uptime 2>&1|grep "load"|wc -l` == 0 ] ; then
 				echo "${1} service require root privileges in order to be managed"
-				sudo -n uptime > /dev/null 2>&1
+				sudo uptime > /dev/null 2>&1
 			fi
 		fi
 	

@@ -3,9 +3,9 @@ function phpfpm_sudo {
 	echo ""
 }
 
-phpfpmExtensions=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/'`
-phpfpmExtensionsEnabled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d/" | grep -v "\.extra\.ini" | perl -pe 's/ext-(.*)\.ini/\1/'`
-phpfpmExtensionsToggled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | grep -Ev "\`echo ${phpfpmExtensionsEnabled} | tr ' ' '|' \`"`
+phpfpmExtensions=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | tr "\\n" " " `
+phpfpmExtensionsEnabled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d/" | grep -v "\.extra\.ini" | perl -pe 's/ext-(.*)\.ini/\1/' | tr "\\n" " "`
+phpfpmExtensionsToggled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | grep -Ev "\`echo ${phpfpmExtensionsEnabled} | tr ' ' '|' \`" | tr "\\n" " "`
 
 function services_phpfpm_case {
 	case ${1} in
