@@ -1,23 +1,37 @@
 #!/bin/bash
 _bashcompletion_paths="${_bashcompletion_paths} install_php_php54"
 
+require "services"
+require "print"
+
+function install_php54_deps {
+	return "brew"
+}
+
+function install_php54_check {
+	brew list php54 > /dev/null 2>&1
+	return $?
+}
 
 function install_php_php54_opts {
-	echo "webdev_install_php_php54_opts=\"`brew options php54 | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
+	echo "webdev_install_php_php54_opts=\"`brew options ${WEBDEV_BREW_PHP_PREFIX}php54 | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
 }
 
 function install_php_php54_case {
 	case ${1} in		
 		install)
-			brew list php54 > /dev/null 2>&1
+			install_php54_check 
 			if [ $? == 0 ] ; then
 				printKO "Service php54" "ALREADY_INSTALLED"
 				return 1
 			else
-				brew install php54 "${@:1}" --with-fpm > /dev/null 2>&1
+				brew tap ${WEBDEV_BREW_PHP_PREFIX}  > /dev/null 2>&1
+				brew tap homebrew/dupes  > /dev/null 2>&1
+				brew install ${WEBDEV_BREW_PHP_PREFIX}php54 "${@:1}" --with-fpm > /dev/null 2>&1
 				ret=$?
 				if [ $? == 0 ] ; then
 					printOK "Service php54" "INSTALLED"
+					install_php54_post
 				else
 					printKO "Service php54" "FAILED"
 				fi
@@ -25,4 +39,26 @@ function install_php_php54_case {
 			fi
 		;;
 	esac
+}
+
+function install_php54_post {
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.4" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.4"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.4/conf.d" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.4/conf.d"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.4/conf.d-brew-available" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.4/conf.d-brew-available"
+	fi
+
+	cp -n /usr/local/etc/php/5.4/conf.d/* "${WEBDEV_PATH}/etc/php/5.4/conf.d-brew-available/"
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.4/conf.d-extra" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.4/conf.d-extra"
+	fi
+
+	services_phpfpm_case "config"
 }

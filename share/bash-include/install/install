@@ -1,6 +1,6 @@
 #!/bin/bash
 _bashcompletion_paths="${_bashcompletion_paths} install"
-servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install | grep -v "^install"|tr "\\n" ' '`
+servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install | grep -vE "^(install|brew)$"|tr "\\n" ' '`
 
 for package in ${servicesInstallable}
 do
@@ -18,8 +18,6 @@ function install_help {
 }
 
 function install_case {
-
-
 	case ${1} in
 		# service|package)
 		# 	install_${1}_case ${@}
@@ -33,7 +31,7 @@ function install_case {
 				showHelp
 			else
 				if [[ ${servicesInstallable} =~ ${1} ]] ; then
-					install_${1}_case "${@}"
+					install_${1}_case install "${@}"
 				else
 					printKO "Service ${1}" "NOT_AVAILABLE"
 				fi

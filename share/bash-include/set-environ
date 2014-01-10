@@ -29,6 +29,7 @@ WEBDEV_REQUIRE_PATH=${WEBDEV_PATH}/share/bash-include
 
 #set_env_var WEBDEV_PATH $WEBDEV_PATH
 
+WEBDEV_BREW_PHP_PREFIX="josegonzalez/php/"
 WEBDEV_PHP_VERSION=`getConfig "php-version"`
 #set_env_var WEBDEV_PHP_VERSION `$plistCmd "print php-version" "$WEBDEV_PATH/webdev-config.plist"`
 WEBDEV_PHP_SHORT_VERSION=`echo ${WEBDEV_PHP_VERSION} | perl -pe "s/\.//"`
@@ -44,7 +45,7 @@ WEBDEV_PHP_SHORT_VERSION=`echo ${WEBDEV_PHP_VERSION} | perl -pe "s/\.//"`
 
 
 #set_env_var WEBDEV_PHP_CONF_PATH ${WEBDEV_PATH}/etc/php/${WEBDEV_PHP_VERSION}
-WEBDEV_PHP_PATH=`brew --prefix php${WEBDEV_PHP_SHORT_VERSION}`
+WEBDEV_PHP_PATH=`brew --prefix ${WEBDEV_BREW_PHP_PREFIX}php${WEBDEV_PHP_SHORT_VERSION}`
 WEBDEV_PHP_CONF_PATH=${WEBDEV_PATH}/etc/php/${WEBDEV_PHP_VERSION}
 #set_env_var WEBDEV_PHP_PATH `brew --prefix php${WEBDEV_PHP_SHORT_VERSION}`
 WEBDEV_NGINX_PATH=`brew --prefix nginx`

@@ -5,7 +5,12 @@ function phpfpm_sudo {
 
 phpfpmExtensions=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | tr "\\n" " " `
 phpfpmExtensionsEnabled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d/" | grep -v "\.extra\.ini" | perl -pe 's/ext-(.*)\.ini/\1/' | tr "\\n" " "`
-phpfpmExtensionsToggled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | grep -Ev "\`echo ${phpfpmExtensionsEnabled} | tr ' ' '|' \`" | tr "\\n" " "`
+if [ "x${phpfpmExtensionsEnabled}" == "x" ] ; then
+	phpfpmExtensionsToggled=${phpfpmExtensions}
+else
+	phpfpmExtensionsToggled=`ls -1 "${WEBDEV_PHP_CONF_PATH}/conf.d-brew-available/" | perl -pe 's/ext-(.*)\.ini/\1/' | grep -Ev "\`echo ${phpfpmExtensionsEnabled} | tr ' ' '|' \`" | tr "\\n" " "`
+fi
+
 
 function services_phpfpm_case {
 	case ${1} in
@@ -19,6 +24,7 @@ function services_phpfpm_case {
 			services_case "disable" "phpfpm"
 		;;
 		config)
+			localTimeZone=`ls -la /etc/localtime  | perl -pe 's/.*\/zoneinfo\///'`
 			templateFromPlist "service-configs:php" "${WEBDEV_PATH}/share/templates/php/php.ini.template" "${WEBDEV_PHP_CONF_PATH}/php.ini"
 			templateFromPlist "service-configs:phpfpm" "${WEBDEV_PATH}/share/templates/php/php-fpm.conf.template" "${WEBDEV_PHP_CONF_PATH}/php-fpm.conf"
 			pear config-set php_ini ${WEBDEV_PHP_CONF_PATH}/php.ini > /dev/null 2>&1

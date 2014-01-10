@@ -1,12 +1,36 @@
-KRED=$(tput setaf 1)
-KYELLOW=$(tput setaf 3)
-KNORMAL=$(tput sgr0)
-KGREEN=$(tput setaf 2)
+#!/bin/bash
+KBLACK="$(tput setaf 0)"
+KBLACKBG="$(tput setab 0)"
+KDARKGREY="$(tput bold ; tput setaf 0)"
+KLIGHTGREY="$(tput setaf 7)"
+KLIGHTGREYBG="$(tput setab 7)"
+KWHITE="$(tput bold ; tput setaf 7)"
+KRED="$(tput setaf 1)"
+KREDBG="$(tput setab 1)"
+KLIGHTRED="$(tput bold ; tput setaf 1)"
+KGREEN="$(tput setaf 2)"
+KGREENBG="$(tput setab 2)"
+KLIGHTGREEN="$(tput bold ; tput setaf 2)"
+KBROWN="$(tput setaf 3)"
+KBROWNBG="$(tput setab 3)"
+KYELLOW="$(tput bold ; tput setaf 3)"
+KBLUE="$(tput setaf 4)"
+KBLUEBG="$(tput setab 4)"
+KLIGHTBLUE="$(tput bold ; tput setaf 4)"
+KPURPLE="$(tput setaf 5)"
+KPURPLEBG="$(tput setab 5)"
+KPINK="$(tput bold ; tput setaf 5)"
+KCYAN="$(tput setaf 6)"
+KCYANBG="$(tput setab 6)"
+KLIGHTCYAN="$(tput bold ; tput setaf 6)"
+KNORMAL="$(tput sgr0)"
 
 _PRINT_VERBOSE_ERROR=1
 _PRINT_VERBOSE_WARNING=2
 _PRINT_VERBOSE_INFO=3
 _PRINT_VERBOSE_DEBUG=4
+
+PRINTFORMAT="%-40s\t%20s\n"
 
 columnCMD="/usr/bin/column -x -s $'\t'"
 function checkPrintVerbose {
@@ -17,44 +41,44 @@ function checkPrintVerbose {
 	fi
 }
 function printOK {
-	printf "%-40s\t%20s\n" "${1}" "${KGREEN}[${2}]${KNORMAL}" | ${columnCMD}
+	printf "${PRINTFORMAT}" "${1}" "${KGREEN}[${2}]${KNORMAL}" | ${columnCMD}
 }
 
 function printKO {
-	printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+	printf "${PRINTFORMAT}" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
 }
 
 function printWATCH {
 	checkPrintVerbose 4
 	if [ $? == 0 ] ; then
-		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+		printf "${PRINTFORMAT}" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
 	fi
 }
 
 function printDEBUG {
 	checkPrintVerbose 4
 	if [ $? == 0 ] ; then
-		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+		printf "${PRINTFORMAT}" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
 	fi
 }
 
 function printINFO {
 	checkPrintVerbose 3
 	if [ $? == 0 ] ; then
-		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+		printf "${PRINTFORMAT}" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
 	fi
 }
 
 function printERR {
 	checkPrintVerbose 1
 	if [ $? == 0 ] ; then
-		printf "%-40s\t%20s\n" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
+		printf "${PRINTFORMAT}" "${1}" "${KRED}[${2}]${KNORMAL}" | ${columnCMD}
 	fi
 }
 
 function printWARN {
 	checkPrintVerbose 2
 	if [ $? == 0 ] ; then
-		printf "%-40s\t%20s\n" "${1}" "${KYELLOW}[${2}]${KNORMAL}" | ${columnCMD}
+		printf "${PRINTFORMAT}" "${1}" "${KYELLOW}[${2}]${KNORMAL}" | ${columnCMD}
 	fi
 }

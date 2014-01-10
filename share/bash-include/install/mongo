@@ -1,6 +1,15 @@
 #!/bin/bash
 _bashcompletion_paths="${_bashcompletion_paths} install_mongo"
 
+function install_mongo_deps {
+	return "brew"
+}
+
+function install_mongo_check {
+	brew list mongo > /dev/null 2>&1
+	return $?
+}
+
 function install_mongo_opts {
 	echo "webdev_install_mongo_opts=\"`brew options mongo | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
 }
@@ -8,7 +17,7 @@ function install_mongo_opts {
 function install_mongo_case {
 	case ${1} in		
 		install)
-			brew list mongo > /dev/null 2>&1
+			install_mongo_check
 			if [ $? == 0 ] ; then
 				printKO "Service mongo" "ALREADY_INSTALLED"
 				return 1

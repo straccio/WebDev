@@ -1,15 +1,23 @@
 #!/bin/bash
 _bashcompletion_paths="${_bashcompletion_paths} install_php_php53"
 
+function install_php53_deps {
+	return "brew"
+}
+
+function install_php53_check {
+	brew list php53 > /dev/null 2>&1
+	return $?
+}
 
 function install_php_php53_opts {
-	echo "webdev_install_php_php53_opts=\"`brew options php53 | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
+	echo "webdev_install_php_php53_opts=\"`brew options ${WEBDEV_BREW_PHP_PREFIX}php53 | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
 }
 
 function install_php_php53_case {
 	case ${1} in		
 		install)
-			brew list php53 > /dev/null 2>&1
+			install_php53_check
 			if [ $? == 0 ] ; then
 				printKO "Service php53" "ALREADY_INSTALLED"
 				return 1

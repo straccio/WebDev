@@ -2,6 +2,15 @@
 #servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/service | grep -v "^service"|tr "\\n" ' '`
 _bashcompletion_paths="${_bashcompletion_paths} install_nginx"
 
+function install_nginx_deps {
+	return "brew"
+}
+
+function install_nginx_check {
+	brew list nginx > /dev/null 2>&1
+	return $?
+}
+
 function install_nginx_opts {
 	echo "webdev_install_nginx_opts=\"`brew options nginx | grep -vE "^\s+" | grep -vE "^$" | tr "\\n" ' '`\""
 }
@@ -9,7 +18,7 @@ function install_nginx_opts {
 function install_nginx_case {
 	case ${1} in		
 		install)
-			brew list nginx > /dev/null 2>&1
+			install_nginx_check
 			if [ $? == 0 ] ; then
 				printKO "Service nginx" "ALREADY_INSTALLED"
 				nginx_postInstall > /dev/null 2>&1

@@ -1,6 +1,6 @@
 #!/bin/bash
-#servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/service | grep -v "^service"|tr "\\n" ' '`
-phpversions=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/php | grep -vE '^php$'| tr "\\n" ' '`
+#servicesInstallable=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/service | grep -vE "^service"|tr "\\n" ' '`
+phpversions=`ls -1 ${WEBDEV_PATH}/share/bash-include/install/php | grep -vE '^(php|extension)$'| tr "\\n" ' '`
 
 _bashcompletion_paths="${_bashcompletion_paths} install_php"
 
@@ -15,12 +15,12 @@ function install_php_opts {
 }
 
 function install_php_case {
-	if [ "x${2}" == "x" ] ; then
+	if [ "x${3}" == "x" ] ; then
 		echo "Wrong argument"
 		showHelp
 	else
-		if [[ ${phpversions} =~ ${2} ]] ; then
-			install_php_${2}_case ${@:3} 
+		if [[ ${phpversions} =~ ${3} ]] ; then
+			install_php_${3}_case install "${@:4}"
 		else
 			echo "Wrong argument"
 			showHelp
