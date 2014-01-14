@@ -8,6 +8,16 @@
 	<string>5.4</string>
 	<key>service-configs</key>
 	<dict>
+		<key>mysql</key>
+		<dict>
+			<key>bindaddress</key>
+			<string>127.0.0.1</string>
+		</dict>
+		<key>mongo</key>
+		<dict>
+			<key>bindaddress</key>
+			<string>127.0.0.1</string>
+		</dict>
 		<key>nginx</key>
 		<dict>
 			<key>port</key>

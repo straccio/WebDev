@@ -22,10 +22,13 @@ function install_php_php55_case {
 				printKO "Service php55" "ALREADY_INSTALLED"
 				return 1
 			else
-				brew install php55 "${@:1}" --with-fpm > /dev/null 2>&1
+				brew tap ${WEBDEV_BREW_PHP_PREFIX}  > /dev/null 2>&1
+				brew tap homebrew/dupes  > /dev/null 2>&1
+				brew install ${WEBDEV_BREW_PHP_PREFIX}php55 "${@:2}" --with-fpm > /dev/null 2>&1
 				ret=$?
 				if [ $? == 0 ] ; then
 					printOK "Service php55" "INSTALLED"
+					install_php55_post
 				else
 					printKO "Service php55" "FAILED"
 				fi
@@ -33,4 +36,26 @@ function install_php_php55_case {
 			fi
 		;;
 	esac
+}
+
+function install_php55_post {
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.5" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.5"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.5/conf.d" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.5/conf.d"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.5/conf.d-brew-available" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.5/conf.d-brew-available"
+	fi
+
+	cp -n /usr/local/etc/php/5.5/conf.d/* "${WEBDEV_PATH}/etc/php/5.5/conf.d-brew-available/"
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.5/conf.d-extra" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.5/conf.d-extra"
+	fi
+
+	services_phpfpm_case "config"
 }

@@ -22,10 +22,13 @@ function install_php_php53_case {
 				printKO "Service php53" "ALREADY_INSTALLED"
 				return 1
 			else
-				brew install php53 "${@:1}" --with-fpm  > /dev/null 2>&1
+				brew tap ${WEBDEV_BREW_PHP_PREFIX}  > /dev/null 2>&1
+				brew tap homebrew/dupes  > /dev/null 2>&1
+				brew install ${WEBDEV_BREW_PHP_PREFIX}php53 "${@:2}" --with-fpm  > /dev/null 2>&1
 				ret=$?
 				if [ $? == 0 ] ; then
 					printOK "Service php53" "INSTALLED"
+					install_php53_post
 				else
 					printKO "Service php53" "FAILED"
 				fi
@@ -33,4 +36,26 @@ function install_php_php53_case {
 			fi
 		;;
 	esac
+}
+
+function install_php53_post {
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.3" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.3"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.3/conf.d" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.3/conf.d"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.3/conf.d-brew-available" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.3/conf.d-brew-available"
+	fi
+
+	cp -n /usr/local/etc/php/5.3/conf.d/* "${WEBDEV_PATH}/etc/php/5.3/conf.d-brew-available/"
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.3/conf.d-extra" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.3/conf.d-extra"
+	fi
+
+	services_phpfpm_case "config"
 }

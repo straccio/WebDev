@@ -22,7 +22,9 @@ function install_php_php52_case {
 				printKO "Service php52" "ALREADY_INSTALLED"
 				return 1
 			else
-				brew install php52 "${@:1}" --with-fpm  > /dev/null 2>&1
+				brew tap ${WEBDEV_BREW_PHP_PREFIX}  > /dev/null 2>&1
+				brew tap homebrew/dupes  > /dev/null 2>&1
+				brew install ${WEBDEV_BREW_PHP_PREFIX}php52 "${@:2}" --with-fpm  > /dev/null 2>&1
 				ret=$?
 				if [ $? == 0 ] ; then
 					printOK "Service php52" "INSTALLED"
@@ -33,4 +35,26 @@ function install_php_php52_case {
 			fi
 		;;
 	esac
+}
+
+function install_php52_post {
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.2" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.2"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.2/conf.d" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.2/conf.d"
+	fi
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.2/conf.d-brew-available" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.2/conf.d-brew-available"
+	fi
+
+	cp -n /usr/local/etc/php/5.2/conf.d/* "${WEBDEV_PATH}/etc/php/5.2/conf.d-brew-available/"
+
+	if [ ! -d "${WEBDEV_PATH}/etc/php/5.2/conf.d-extra" ] ; then
+		mkdir -p "${WEBDEV_PATH}/etc/php/5.2/conf.d-extra"
+	fi
+
+	services_phpfpm_case "config"
 }

@@ -11,6 +11,9 @@ function services_mongo_case {
 		enable)
 			services_case "enable" "mongo"
 		;;
+		config)
+			templateFromPlist "service-configs:mongo" "${WEBDEV_PATH}/share/templates/mongo/mongod.conf.template" "${WEBDEV_MONGO_CONF_PATH}/mongod.conf"
+		;;
 		disable)
 			services_case "disable" "mongo"
 		;;
@@ -37,7 +40,7 @@ function mongo_afterStop {
 }
 
 function services_mongo_opts {
-	echo "webdev_services_mongo_opts=\"start stop restart check enable disable\""
+	echo "webdev_services_mongo_opts=\"start stop restart check enable disable config\""
 }
 
 function services_mongo_help {
@@ -45,5 +48,6 @@ function services_mongo_help {
 						"webdev services mongo stop	stop mongo service" \
 						"webdev services mongo restart	restart mongo service" \
 						"webdev services mongo check	check mongo service" \
+						"webdev services mongo config	generate config files for mongo" \
 						"webdev services mongo help	this help"
 }

@@ -14,6 +14,9 @@ function services_mysql_case {
 		disable)
 			services_case "disable" "mysql"
 		;;
+		config)
+			templateFromPlist "service-configs:mysql" "${WEBDEV_PATH}/share/templates/mysql/my.cnf.template" "${WEBDEV_MYSQL_CONF_PATH}/my.cnf"
+		;;
 		*|help|?|h)
 			showHelp
 		;;
@@ -37,7 +40,7 @@ function mysql_afterStop {
 }
 
 function services_mysql_opts {
-	echo "webdev_services_mysql_opts=\"start stop restart check enable disable\""
+	echo "webdev_services_mysql_opts=\"start stop restart config check enable disable\""
 }
 
 function services_mysql_help {
@@ -45,5 +48,6 @@ function services_mysql_help {
 						"webdev services mysql stop	stop mysql service" \
 						"webdev services mysql restart	restart mysql service" \
 						"webdev services mysql check	check mysql service" \
+						"webdev services mysql config	generate config files for mysql" \
 						"webdev services mysql help	this help"
 }

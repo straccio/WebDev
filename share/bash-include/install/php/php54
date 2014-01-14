@@ -27,7 +27,7 @@ function install_php_php54_case {
 			else
 				brew tap ${WEBDEV_BREW_PHP_PREFIX}  > /dev/null 2>&1
 				brew tap homebrew/dupes  > /dev/null 2>&1
-				brew install ${WEBDEV_BREW_PHP_PREFIX}php54 "${@:1}" --with-fpm > /dev/null 2>&1
+				brew install "${WEBDEV_BREW_PHP_PREFIX}php54" "${@:2}" --with-fpm > /dev/null 2>&1
 				ret=$?
 				if [ $? == 0 ] ; then
 					printOK "Service php54" "INSTALLED"
